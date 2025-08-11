@@ -5,7 +5,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Util.Padding import pad
 from Crypto.Util.Padding import unpad
 from etc.base import *
-from mi.mi_encode import Ctx_code
+from mi.mi_code import Ctx_code
 
 # 加解密脚本，包括AES,DES,RSA，其它加密方式请续写
 # 使用方式
@@ -34,11 +34,11 @@ class Ctx_encrypt(Ctx_hit_base):
         ciphertext=string
         if self.algo==ALGO.AES:
             cipher = AES.new(self.key, self.mode, self.iv)
-            plaintext = pad(string.encode(self.encoding), AES.block_size if self.block==None else self.block)
+            plaintext = pad(string.encode(self.encoding), AES.block_size)
             ciphertext = cipher.encrypt(plaintext)
         elif self.algo==ALGO.DES:
             cipher = DES.new(self.key, self.mode, self.iv)
-            plaintext = pad(string.encode(self.encoding), DES.block_size if self.block==None else self.block)
+            plaintext = pad(string.encode(self.encoding), DES.block_size)
             ciphertext = cipher.encrypt(plaintext)
         elif self.algo==ALGO.RSA:
             cipher_rsa = PKCS1_OAEP.new(RSA.import_key(self.key))

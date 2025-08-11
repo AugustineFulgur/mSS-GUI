@@ -17,10 +17,10 @@ MITM常见脚本合集。
 
 ### 2.0 基类
 
-##### Ctx_base
+#### Ctx_base
 - rr[list,enum] 可取值RR.REQUEST（请求）和RR.RESPONSE（响应），表示当前模块是否对请求、响应生效，如\[RR.REQUEST,RR.RESPONSE\]。
 
-##### Ctx_hit_base < Ctx_base
+#### Ctx_hit_base < Ctx_base
 - regex[str] 捕获表达式，这个类**仅捕获请求体和响应体**。需要注意的是对请求体`a=1`，表达式`a=[0-9]*`捕获`a=1`，表达式`a=([0-9]*)`捕获1。
 
 ### 2.1 加解密
@@ -34,3 +34,9 @@ MITM常见脚本合集。
 - output[enum] 可取值为CODE.BASE64/CODE.HEX，加密的输出格式或解密的输入格式。
 - encoding[str] 编码格式，默认值为utf-8。
 - iv[str|byte] 一般情况下为偏移量，格式参考key。在RSA解密模式，为私钥的password，str格式。
+
+#### mi_code < Ctx_hit_base
+只有Ctx_code。
+目前支持base64和hex的编码解码。
+- code[enum]
+- ft[enum] 
