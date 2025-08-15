@@ -1,12 +1,12 @@
 #公用函数
 from abc import ABC,abstractmethod
 import re
-import base64
+import run
 from mitmproxy.http import HTTPFlow
-import urllib
 from enum import Enum
+from fnmatch import fnmatch # 一般情况下，HOST用通配符匹配 有人统一一下匹配方法吗
 
-#最近CS写多了 但是python的OOP还是写着别扭
+# 最近CS写多了 但是python的OOP还是写着别扭
 class RR(Enum):
     REQUEST=0
     RESPONSE=1
@@ -23,10 +23,26 @@ class Ctx_base(ABC):
         self.rr=rr #[RR]
 
     def request(self, flow: HTTPFlow):
-        return False if not RR.REQUEST in self.rr else True
-
+        if not RR.REQUEST in self.rr:
+            return False
+        if run.GLOBAL_DOMAIN!=None: #判断domain是否在范围内
+            for i in run.GLOBAL_DOMAIN:
+                if i[0]=="!":
+                    return not fnmatch(flow.request.host,i[1:])
+                else:
+                    return fnmatch(flow.request.host,run.GLOBAL_DOMAIN)
+        return True
+    
     def response(self, flow: HTTPFlow):
-        return False if not RR.RESPONSE in self.rr else True
+        if not RR.RESPONSE in self.rr:
+            return False
+        if run.GLOBAL_DOMAIN!=None: #判断domain是否在范围内
+            for i in run.GLOBAL_DOMAIN:
+                if i[0]=="!":
+                    return not fnmatch(flow.request.host,i[1:])
+                else:
+                    return fnmatch(flow.request.host,run.GLOBAL_DOMAIN)
+        return True
 
 class Ctx_hit_base(Ctx_base,ABC): 
     

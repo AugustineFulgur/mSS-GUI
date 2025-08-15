@@ -4,6 +4,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Util.Padding import pad
 from Crypto.Util.Padding import unpad
+from gmssl.sm4 import CryptSM4, SM4_ENCRYPT, SM4_DECRYPT
 from etc.base import *
 from mi.mi_code import Ctx_code
 
@@ -16,6 +17,7 @@ class ALGO(Enum):
     AES=1
     DES=2
     RSA=3
+    SM4=4
 
 #加密
 class Ctx_encrypt(Ctx_hit_base):
@@ -44,7 +46,12 @@ class Ctx_encrypt(Ctx_hit_base):
             cipher_rsa = PKCS1_OAEP.new(RSA.import_key(self.key))
             plaintext_bytes = string.encode(self.encoding)
             ciphertext = cipher_rsa.encrypt(plaintext_bytes)
-        
+        elif self.algo==ALGO.SM4:
+            #对国密4适配
+            sm4 = CryptSM4()
+            sm4.set_key(self.key, SM4_ENCRYPT)
+            plaintext_bytes = string.encode(self.encoding)
+            ciphertext = sm4.crypt_ecb(plaintext_bytes)
         return Ctx_code.encode(ciphertext,self.output).decode(self.encoding)
     
 #解密
@@ -75,5 +82,10 @@ class Ctx_decrypt(Ctx_hit_base):
         elif self.algo == ALGO.RSA:
             cipher_rsa = PKCS1_OAEP.new(RSA.import_key(self.key,self.ivorpass))
             decrypted_bytes = cipher_rsa.decrypt(string)
+            plaintext = decrypted_bytes.decode(self.encoding)
+        elif self.algo == ALGO.SM4:
+            sm4 = CryptSM4()
+            sm4.set_key(self.key, SM4_DECRYPT)
+            decrypted_bytes = sm4.crypt_ecb(string)
             plaintext = decrypted_bytes.decode(self.encoding)
         return plaintext
