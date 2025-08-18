@@ -17,6 +17,10 @@ MITM常见脚本合集。
 
 ### 2.0 基类
 
+#### Ctx_global
+- rr[list,enum] 可取值RR.REQUEST（请求）和RR.RESPONSE（响应），表示当前模块是否对请求、响应生效，如[RR.REQUEST,RR.RESPONSE]。
+不受全局变量影响，对所有请求/响应包生效。
+
 #### Ctx_base
 - rr[list,enum] 可取值RR.REQUEST（请求）和RR.RESPONSE（响应），表示当前模块是否对请求、响应生效，如[RR.REQUEST,RR.RESPONSE]。
 
@@ -25,7 +29,7 @@ MITM常见脚本合集。
 
 ### 2.1 加解密
 
-#### mi_crypt < Ctx_hit_base
+#### mi_crypt.Ctx_encrypt/Ctx_decrypt < Ctx_hit_base
 包括Ctx_encrypt（加密）和Ctx_decrypt（解密），目前支持的算法为AES/DES/RSA/SM4。使用前请记得安装依赖。
 **可以与burpsuite联动以实现无感请求包解密。**
 - algo[enum] 可取值为ALGO.DES/ALGO.AES/ALGO.RSA/ALGO.SM4...表示加解密使用的算法。
@@ -48,8 +52,7 @@ Ctx_encrypt(
 
 Ctx_encrypt(regex,rr,algo,mode,key,[output,encoding,iv])
 ```
-#### mi_code < Ctx_hit_base
-只有Ctx_code。
+#### mi_code.Ctx_code < Ctx_hit_base
 目前支持base64和hex的编码解码。
 - ft[enum] 可取值为FT.FROM/FT.TO，分别对应解码/编码。
 - code[enum] 可取值为CODE.BASE64/CODE.HEX，指示编码格式。
@@ -66,8 +69,8 @@ Ctx_code(regex,rr,ft,code)
 
 ### 2.2 头处理
 
-#### mi_head < Ctx_base
-只有Ctx_head，可以对请求和响应中的head进行增、删、改、打印（这里可以通过修改源码扩展内容）。
+#### mi_head.Ctx_head < Ctx_base
+可以对请求和响应中的head进行增、删、改、打印（这里可以通过修改源码扩展内容）。
 - head[dict] 字典，需要进行修改的头和值，当操作为删除时value可以随意取值。
 - curd[enum] 可取值为CURD.ADD/CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
 ``` python
@@ -78,6 +81,29 @@ Ctx_head(
 )
 
 Ctx_head(rr,head,curd)
+```
+
+### 2.3 流量优化
+
+#### mi_notrace.Ctx_drop_wechat301 < Ctx_base
+自动drop请求微信登录的包。一般在“用浏览器打开微信公众号链接”时用到。
+无参。
+``` python
+Ctx_drop_wechat301(
+)
+
+Ctx_drop_wechat301(rr=[RR.REQUEST])
+```
+
+#### mi_notrace.Ctx_ua < Ctx_base
+修改请求使用的User-Agent。目前有手机、爬虫、微信小程序三个UA。
+- ua[UA] 可取值为UA.PHONE/UA.SPIDER/UA.WXMINIPROGRAM
+``` python
+Ctx_ua(
+    UA.PHONE
+)
+
+Ctx_head(ua)
 ```
 
 ## 3 全局变量
@@ -91,7 +117,9 @@ Ctx_head(rr,head,curd)
 
 `一些不必要的更新是在凑COMMIT。`
 这个项目会持续更新，如有需求可以向我的github邮箱发送邮件。
+由于项目在施工中，每次commit可能会存在部分未完成的代码。使用脚本请参考文档。
 - 0.0.1 开天辟地，拥有基础功能
 - 0.0.2 修复BUG
 - 0.0.3 完善文档部分
 - 0.0.4 修改文档排版，新增SM4加解密，添加全局变量和头处理
+- 0.0.5 增加一些用于流量优化的脚本

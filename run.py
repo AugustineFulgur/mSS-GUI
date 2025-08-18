@@ -2,6 +2,7 @@ from etc.base import *
 from mi.mi_crypt import *
 from mi.mi_head import *
 from mi.mi_code import *
+from mi.mi_notrace import *
 
 GLOBAL_DOMAIN=None # DOMAIN范围
 

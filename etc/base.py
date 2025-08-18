@@ -17,9 +17,14 @@ class CURD(Enum):
     REPLACE=2
     LOOKUP=3
 
+class Ctx_global(ABC):
+
+    def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
+        self.rr=rr #[RR]
+
 class Ctx_base(ABC):
 
-    def __init__(self,rr):
+    def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
         self.rr=rr #[RR]
 
     def request(self, flow: HTTPFlow):
