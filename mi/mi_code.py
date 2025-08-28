@@ -1,12 +1,7 @@
-from Crypto.Cipher import AES
-from Crypto.Cipher import DES
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Util.Padding import pad
-from Crypto.Util.Padding import unpad
 import base64
 import binascii
 from etc.base import *
+from enum import Enum
 
 class CODE(Enum):
     BASE64=0

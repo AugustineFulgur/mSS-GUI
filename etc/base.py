@@ -1,7 +1,7 @@
 #公用函数
 from abc import ABC,abstractmethod
 import re
-import run
+from settings import *
 from mitmproxy.http import HTTPFlow
 from enum import Enum
 from fnmatch import fnmatch # 一般情况下，HOST用通配符匹配 有人统一一下匹配方法吗
@@ -21,6 +21,16 @@ class Ctx_global(ABC):
 
     def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
         self.rr=rr #[RR]
+    
+    def request(self, flow: HTTPFlow):
+        if not RR.REQUEST in self.rr:
+            return False
+        return True
+    
+    def response(self, flow: HTTPFlow):
+        if not RR.RESPONSE in self.rr:
+            return False
+        return True
 
 class Ctx_base(ABC):
 
@@ -30,23 +40,23 @@ class Ctx_base(ABC):
     def request(self, flow: HTTPFlow):
         if not RR.REQUEST in self.rr:
             return False
-        if run.GLOBAL_DOMAIN!=None: #判断domain是否在范围内
-            for i in run.GLOBAL_DOMAIN:
+        if GLOBAL_DOMAIN!=None: #判断domain是否在范围内
+            for i in GLOBAL_DOMAIN:
                 if i[0]=="!":
                     return not fnmatch(flow.request.host,i[1:])
                 else:
-                    return fnmatch(flow.request.host,run.GLOBAL_DOMAIN)
+                    return fnmatch(flow.request.host,GLOBAL_DOMAIN)
         return True
     
     def response(self, flow: HTTPFlow):
         if not RR.RESPONSE in self.rr:
             return False
-        if run.GLOBAL_DOMAIN!=None: #判断domain是否在范围内
-            for i in run.GLOBAL_DOMAIN:
+        if GLOBAL_DOMAIN!=None: #判断domain是否在范围内
+            for i in GLOBAL_DOMAIN:
                 if i[0]=="!":
                     return not fnmatch(flow.request.host,i[1:])
                 else:
-                    return fnmatch(flow.request.host,run.GLOBAL_DOMAIN)
+                    return fnmatch(flow.request.host,GLOBAL_DOMAIN)
         return True
 
 class Ctx_hit_base(Ctx_base,ABC): 

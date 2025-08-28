@@ -1,0 +1,1 @@
+GLOBAL_DOMAIN=None # DOMAIN范围

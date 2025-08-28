@@ -7,6 +7,7 @@ from Crypto.Util.Padding import unpad
 from gmssl.sm4 import CryptSM4, SM4_ENCRYPT, SM4_DECRYPT
 from etc.base import *
 from mi.mi_code import Ctx_code
+from enum import Enum
 
 # 加解密脚本，包括AES,DES,RSA，其它加密方式请续写
 # 使用方式

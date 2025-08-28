@@ -1,4 +1,4 @@
-MITM常见脚本合集。
+MITM常用脚本合集。
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
@@ -8,7 +8,7 @@ MITM常见脚本合集。
 ## 1 使用方式
 首先在run.py中添加要加载的函数（类）并设置参数。
 然后在terminal中启动mitmdump。其中，mitm可以以以下两种形式启动（还有更多方式，请见mitmproxy的文档）：
-①只监听，可用于各种流量工具的自动加解密如burpsuite、sqlmap tamper，或自定义包格式等。
+①只监听，可用于各种流量工具的自动加解密如burpsuite、sqlmap tamper，或自定义包格式等，如果做自动加解密建议使用explorer->bp->mitm形式。
 `mitmdump -s [mitm.py] -p [port]` 
 ②做中转代理，如sqlmap->mitm->burpsuite
 `mitmdump -s [mitm.py] -p [in-port] --mode upstream:http://localhost:[out-port]`
@@ -108,7 +108,7 @@ Ctx_head(ua)
 
 ## 3 全局变量
 
-可以在run.py中设置以下全局变量以控制脚本的全局行为：
+可以在settings.py中设置以下全局变量以控制脚本的全局行为：
 - GLOBAL_DOMAIN[list] 列表，指定脚本生效的domain范围。由于普遍习惯，使用**通配符**而非正则进行匹配。毕竟在正则的情况下*.4399.com就需要写成.*\.4399\.com，感觉稍微有点反人类了。
     - 正向匹配，可以使用如：*.4399.com
     - **如需要反向排除，请在单词最前部分使用感叹号（!）**，如：!\*.4399.com
@@ -123,3 +123,4 @@ Ctx_head(ua)
 - 0.0.3 完善文档部分
 - 0.0.4 修改文档排版，新增SM4加解密，添加全局变量和头处理
 - 0.0.5 增加一些用于流量优化的脚本
+- 0.0.6 DEBUG，修复导入问题

@@ -1,5 +1,6 @@
 # 自动Drop、自动删除用户信息、禁止跳转到微信客户端、自动手机UA、自动禁止蜜罐信息收集（也就是drop所有qq、知乎、微博、贴吧的包，考虑仅在渗透时开启）
 from etc.base import *
+from enum import Enum
 
 #Drop微信跳转包
 class Ctx_drop_wechat301(Ctx_global):
