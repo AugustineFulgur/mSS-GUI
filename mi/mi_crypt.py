@@ -5,6 +5,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Util.Padding import pad
 from Crypto.Util.Padding import unpad
 from gmssl.sm4 import CryptSM4, SM4_ENCRYPT, SM4_DECRYPT
+#from gmssl.sm2 import CryptSM2
 from etc.base import *
 from mi.mi_code import Ctx_code
 from enum import Enum

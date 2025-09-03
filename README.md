@@ -2,16 +2,52 @@ MITM常用脚本合集。
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
+
 2. 可移植性高，一次加解密可以在各种工具（bp、sqlmap、以及其他支持代理的利用工具）上使用，达到无感加解密。如工具本身不支持使用代理，考虑使用proxifier。
+
 3. BP插件写着太烦人了^ ^
 
 ## 1 使用方式
 首先在run.py中添加要加载的函数（类）并设置参数。
+
 然后在terminal中启动mitmdump。其中，mitm可以以以下两种形式启动（还有更多方式，请见mitmproxy的文档）：
+
 ①只监听，可用于各种流量工具的自动加解密如burpsuite、sqlmap tamper，或自定义包格式等，如果做自动加解密建议使用explorer->bp->mitm形式。
 `mitmdump -s [mitm.py] -p [port]` 
+
 ②做中转代理，如sqlmap->mitm->burpsuite
 `mitmdump -s [mitm.py] -p [in-port] --mode upstream:http://localhost:[out-port]`
+
+注：出现证书问题（如自签名证书、证书过期）可以对mitm使用--ssl-insecure。
+
+### 1.1 使用示例-加密功能
+
+具体请参照2.1节加解密。
+
+假设网站存在响应包加密DES、模式CBC、密钥为A，偏移为B，输出格式HEX，我们想在BP里看到响应明文。
+
+先修改run.py，选择模块Ctx_decrypt。
+
+``` python
+Ctx_decrypt(
+    ':"([^"]*)"', #假设响应包格式为{"data":"ADIOJOICVDJVDLS"}，则需要匹配的密文正则表达式为`:"([^"]*)"`。
+    [RR.RESPONSE], #又由于我们只解密响应包，模块的目标为[RR.RESPONSE]。
+    ALGO.DES, #DES加密
+    AES.MODE_CBC, #CBC模式
+    A, #密钥
+    CODE.BASE64, #输入格式
+    'utf-8', #编码格式（影响输出中文编码等）
+    B, #偏移
+)
+```
+
+写完Ctx_decrypt之后，将其加入run.py中的addons数组。
+
+然后使用`mitmdump -s run.py -p [port]`运行，在bp中设置顶级代理=http://localhost:[port]即可，也就是这里：
+
+![alt text](img/1.png)
+
+此时，代理响应从服务器发出，先经过mitmproxy，再传回bp，此时响应包中data对应的值已被解密。
 
 ## 2 脚本介绍
 
@@ -117,6 +153,7 @@ Ctx_head(ua)
 
 `一些不必要的更新是在凑COMMIT。`
 这个项目会持续更新，如有需求可以向我的github邮箱发送邮件。
+
 由于项目在施工中，每次commit可能会存在部分未完成的代码。使用脚本请参考文档。
 - 0.0.1 开天辟地，拥有基础功能
 - 0.0.2 修复BUG
