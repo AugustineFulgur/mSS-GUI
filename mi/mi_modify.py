@@ -1,10 +1,11 @@
+# head和body的处理和替换
 from etc.base import *
 
 class Ctx_head(Ctx_base):
 
-    def __init__(self, rr,head:dict,curd):
+    def __init__(self, rr,s1:str,curd,s2:str=""):
         super().__init__(rr)
-        self.head=head
+        self.head={s1:s2}
         self.curd=curd #CURD
     
     def request(self, flow: HTTPFlow):
@@ -31,9 +32,10 @@ class Ctx_head(Ctx_base):
                 print(req.headers[i.key])
 
 class Ctx_content(Ctx_base):
-    def __init__(self, rr,s:str,curd,s2:str=None):
+
+    def __init__(self, rr,s1:str,curd,s2:str=""):
         super().__init__(rr)
-        self.s=s
+        self.s=s1
         self.s2=s2
         self.curd=curd #CURD
     
@@ -52,3 +54,23 @@ class Ctx_content(Ctx_base):
             elif self.curd==CURD.REPLACE:
                 # 从一些角度上必要但另一些角度上不必要的东西
                 req.content.replace(self.s,self.s2)
+
+class Ctx_all(Ctx_base):
+    
+    def __init__(self, rr,s:str,curd,s2:str=None):
+        super().__init__(rr)
+        self.s=s
+        self.s2=s2
+        self.curd=curd #CURD
+        self.head=Ctx_head(rr,s,curd,s2)
+        self.content=Ctx_content(rr,s,curd,s2)
+
+    def request(self, flow):
+        if not super().request(flow): return
+        self.head.request(flow)
+        self.content.request(flow)
+    
+    def response(self, flow):
+        if not super().response(flow): return
+        self.head.response(flow)
+        self.content.response(flow)

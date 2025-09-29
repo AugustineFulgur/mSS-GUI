@@ -55,7 +55,7 @@ Ctx_decrypt(
 
 #### Ctx_global
 - rr[list,enum] 可取值RR.REQUEST（请求）和RR.RESPONSE（响应），表示当前模块是否对请求、响应生效，如[RR.REQUEST,RR.RESPONSE]。
-不受全局变量影响，对所有请求/响应包生效。
+**不受全局变量影响，对所有请求/响应包生效。**
 
 #### Ctx_base
 - rr[list,enum] 可取值RR.REQUEST（请求）和RR.RESPONSE（响应），表示当前模块是否对请求、响应生效，如[RR.REQUEST,RR.RESPONSE]。
@@ -103,20 +103,54 @@ Ctx_code(
 Ctx_code(regex,rr,ft,code)
 ```
 
-### 2.2 头处理
+### 2.2 请求头、请求体的modify
 
-#### mi_head.Ctx_head < Ctx_base
-可以对请求和响应中的head进行增、删、改、打印（这里可以通过修改源码扩展内容）。
-- head[dict] 字典，需要进行修改的头和值，当操作为删除时value可以随意取值。
+#### mi_modify.Ctx_head < Ctx_base
+可以对请求和响应中的head进行增、删、改、打印（这里可以通过修改源码扩展内容）。如果要一次性修改多个头，建议使用多个Ctx_head实例。
+- s1[str] 需要进行修改的头
 - curd[enum] 可取值为CURD.ADD/CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
+- s2[str] 可选，需要修改的值，当操作为删除时可不写。
 ``` python
 Ctx_head(
     [RR.REQUEST],
-    {{"Authorization","Bearer 55yL5ZWl5ZGiXiBe"}},
-    CURD.ADD
+    "Authorization",
+    CURD.ADD,
+    "Bearer 55yL5ZWl5ZGiXiBe",
 )
 
-Ctx_head(rr,head,curd)
+Ctx_head(rr,s1,curd,s2="")
+```
+
+#### mi_modify.Ctx_content < Ctx_base
+可以对请求和响应中的body进行增、删、改、打印（这里可以通过修改源码扩展内容）。如果要一次性修改多处内容，建议使用多个Ctx_content实例。
+- s1[str] 需要进行修改的值
+- curd[enum] 可取值为CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
+- s2[str] 可选，需要修改的目的值，当操作为删除时可不写。
+``` python
+Ctx_content(
+    [RR.REQUEST],
+    "user_id=1",
+    CURD.REPLACE,
+    "user_id=19",
+)
+
+Ctx_content(rr,s1,curd,s2="")
+```
+
+#### mi_modify.Ctx_all < Ctx_base
+Ctx_content+Ctx_head，简化操作使用此类。
+- s1[str] 需要进行修改的值
+- curd[enum] 可取值为CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
+- s2[str] 可选，需要修改的目的值，当操作为删除时可不写。
+``` python
+Ctx_all(
+    [RR.REQUEST],
+    "10000001",
+    CURD.REPLACE,
+    "10000003",
+)
+
+Ctx_all(rr,s1,curd,s2="")
 ```
 
 ### 2.3 流量优化
@@ -131,7 +165,7 @@ Ctx_drop_wechat301(
 Ctx_drop_wechat301(rr=[RR.REQUEST])
 ```
 
-#### mi_notrace.Ctx_ua < Ctx_base
+#### mi_notrace.Ctx_ua < Ctx_global
 修改请求使用的User-Agent。目前有手机、爬虫、微信小程序三个UA。
 - ua[UA] 可取值为UA.PHONE/UA.SPIDER/UA.WXMINIPROGRAM
 ``` python
@@ -139,7 +173,18 @@ Ctx_ua(
     UA.PHONE
 )
 
-Ctx_head(ua)
+Ctx_ua(ua)
+```
+
+#### mi_notrace.Ctx_drop < Ctx_global
+自动killurl中带有关键词的包。
+- hint[list] 为**正则表达式**列表，当任意一个正则表达式匹配到URL时丢包，如"4399\.com.*report$"匹配http://www.4399.com/123/report。
+``` python
+Ctx_drop(
+    ["report","aegis.qq.com"]
+)
+
+Ctx_drop(hint)
 ```
 
 ## 3 全局变量
@@ -161,3 +206,4 @@ Ctx_head(ua)
 - 0.0.4 修改文档排版，新增SM4加解密，添加全局变量和头处理
 - 0.0.5 增加一些用于流量优化的脚本
 - 0.0.6 DEBUG，修复导入问题
+- 0.0.7 重构合并了Ctx_head和Ctx_content，新增Ctx_drop
