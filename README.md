@@ -1,9 +1,12 @@
-MITM常用脚本合集。
+
+# mitmproxySecurityScripts: mSS-GUI a mitm based cyber security tool
+
+基于mitmproxy的安全工具。
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
 
-2. 可移植性高，一次加解密可以在各种工具（bp、sqlmap、以及其他支持代理的利用工具）上使用，达到无感加解密。如工具本身不支持使用代理，考虑使用proxifier。
+2. 可移植性高，一次加解密可以在各种工具（bp、sqlmap、以及其他支持代理的利用工具）上使用，达到无感加解密，同理各种敏感路径提取也可以整合起来不用面对google变幻的规则。如工具本身不支持使用代理，考虑使用proxifier。
 
 3. BP插件写着太烦人了^ ^
 
@@ -20,7 +23,21 @@ MITM常用脚本合集。
 
 注：出现证书问题（如自签名证书、证书过期）可以对mitm使用--ssl-insecure。
 
-### 1.1 使用示例-加密功能
+### 1.1 GUI
+
+本工具支持GUI页面（需要启用插件Ctx_gui），安全起见工具启动时会生成一个token，你也可以在settings里自定义一个固定的token。
+![alt text](img/2.png)
+
+可以在任意路由后方添加console.mss以打开控制台：
+
+![alt text](img/3.png)
+
+输入生成的token以使用控制台。
+
+由于mitmdump本身输出比较繁杂，组件的输出不但会在终端输出中显示，也会在GUI控制台中显示。
+同时，也可以在控制台中自由修改配置。
+
+### 1.2 使用示例-加密功能
 
 具体请参照2.1节加解密。
 
@@ -108,7 +125,7 @@ Ctx_code(regex,rr,ft,code)
 #### mi_modify.Ctx_head < Ctx_base
 可以对请求和响应中的head进行增、删、改、打印（这里可以通过修改源码扩展内容）。如果要一次性修改多个头，建议使用多个Ctx_head实例。
 - s1[str] 需要进行修改的头
-- curd[enum] 可取值为CURD.ADD/CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
+- curd[enum] 可取值为CURD.ADD/CURD.DELETE/DURD.REPLACE，指示对应增删改查操作。
 - s2[str] 可选，需要修改的值，当操作为删除时可不写。
 ``` python
 Ctx_head(
@@ -124,7 +141,7 @@ Ctx_head(rr,s1,curd,s2="")
 #### mi_modify.Ctx_content < Ctx_base
 可以对请求和响应中的body进行增、删、改、打印（这里可以通过修改源码扩展内容）。如果要一次性修改多处内容，建议使用多个Ctx_content实例。
 - s1[str] 需要进行修改的值
-- curd[enum] 可取值为CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
+- curd[enum] 可取值为CURD.DELETE/DURD.REPLACE，指示对应增删改查操作。
 - s2[str] 可选，需要修改的目的值，当操作为删除时可不写。
 ``` python
 Ctx_content(
@@ -140,7 +157,7 @@ Ctx_content(rr,s1,curd,s2="")
 #### mi_modify.Ctx_all < Ctx_base
 Ctx_content+Ctx_head，简化操作使用此类。
 - s1[str] 需要进行修改的值
-- curd[enum] 可取值为CURD.DELETE/DURD.REPLACE/CURD.LOOKUP，指示对应增删改查操作。
+- curd[enum] 可取值为CURD.DELETE/DURD.REPLACE，指示对应增删改查操作。
 - s2[str] 可选，需要修改的目的值，当操作为删除时可不写。
 ``` python
 Ctx_all(
@@ -177,6 +194,7 @@ Ctx_ua(ua)
 ```
 
 #### mi_notrace.Ctx_drop < Ctx_global
+
 自动killurl中带有关键词的包。
 - hint[list] 为**正则表达式**列表，当任意一个正则表达式匹配到URL时丢包，如"4399\.com.*report$"匹配http://www.4399.com/123/report。
 ``` python
@@ -187,10 +205,18 @@ Ctx_drop(
 Ctx_drop(hint)
 ```
 
+### 2.4 GUI
+
+#### mi_gui.Ctx_gui < Ctx_global
+
+无参插件，GUI插件。
+
+启用时，请在任意url后面添加console.mss以访问控制台。相见节#1.1。
+
 ## 3 全局变量
 
 可以在settings.py中设置以下全局变量以控制脚本的全局行为：
-- GLOBAL_DOMAIN[list] 列表，指定脚本生效的domain范围。由于普遍习惯，使用**通配符**而非正则进行匹配。毕竟在正则的情况下*.4399.com就需要写成.*\.4399\.com，感觉稍微有点反人类了。
+- 全局范围[list] 列表，指定脚本生效的domain范围。由于普遍习惯，使用**通配符**而非正则进行匹配。毕竟在正则的情况下*.4399.com就需要写成.*\.4399\.com，感觉稍微有点反人类了。
     - 正向匹配，可以使用如：*.4399.com
     - **如需要反向排除，请在单词最前部分使用感叹号（!）**，如：!\*.4399.com
 
@@ -207,3 +233,5 @@ Ctx_drop(hint)
 - 0.0.5 增加一些用于流量优化的脚本
 - 0.0.6 DEBUG，修复导入问题
 - 0.0.7 重构合并了Ctx_head和Ctx_content，新增Ctx_drop
+- 0.0.8 新增GUI界面；优化modify模块
+- 0.0.8.1 |存档| GUI版本1

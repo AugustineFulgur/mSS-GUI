@@ -1,5 +1,7 @@
 # head和body的处理和替换
 from etc.base import *
+from mi.mi_gui import *
+import re
 
 class Ctx_head(Ctx_base):
 
@@ -28,15 +30,14 @@ class Ctx_head(Ctx_base):
         elif self.curd==CURD.LOOKUP:
             # CAUTION
             # 请在这里修改以适配
-            print(req.headers[self.s1])
+            Ctx_gui.log("捕获HEADER"+req.headers[self.s1])
 
 class Ctx_content(Ctx_base):
 
-    def __init__(self, rr,s1:str,curd,s2:str=""):
+    def __init__(self, rr,s1:str,s2:str=""):
         super().__init__(rr)
         self.s=s1
         self.s2=s2
-        self.curd=curd #CURD
     
     def request(self, flow: HTTPFlow):
         if not super().request(flow): return
@@ -47,21 +48,16 @@ class Ctx_content(Ctx_base):
         self.do_curd(flow.response)
 
     def do_curd(self,req):
-        if self.curd==CURD.DELETE:
-            req.text.replace(self.s,"")
-        elif self.curd==CURD.REPLACE:
-            # 从一些角度上必要但另一些角度上不必要的东西
-            req.text.replace(self.s,self.s2)
+        req.text.replace(self.s,self.s2)
 
 class Ctx_all(Ctx_base):
     
-    def __init__(self, rr,s:str,curd,s2:str=None):
+    def __init__(self, rr,s:str,s2:str=None):
         super().__init__(rr)
         self.s=s
         self.s2=s2
-        self.curd=curd #CURD
-        self.head=Ctx_head(rr,s,curd,s2)
-        self.content=Ctx_content(rr,s,curd,s2)
+        self.head=Ctx_head(rr,s,CURD.REPLACE,s2)
+        self.content=Ctx_content(rr,s,s2)
 
     def request(self, flow):
         if not super().request(flow): return
@@ -72,3 +68,22 @@ class Ctx_all(Ctx_base):
         if not super().response(flow): return
         self.head.response(flow)
         self.content.response(flow)
+
+class Ctx_rlookup(Ctx_base,Ctx_addon):
+
+    def __init__(self, rr, reg):
+        Ctx_base.__init__(self,rr)
+        Ctx_addon.__init__(self,"RLOOKUP",["关键词","结果"])
+        self.reg=reg
+
+    def request(self, flow):
+        if not super().request(flow): return
+        for i in re.findall(self.reg,flow.request.raw_content.decode(Ctx_base.code(flow.request))):
+            self.addon.log.append([self.reg,i])
+            Ctx_gui.log("命中："+i)
+    
+    def response(self, flow):
+        if not super().response(flow): return
+        for i in re.findall(self.reg,flow.response.raw_content.decode(Ctx_base.code(flow.response))):
+            self.addon.log.append([self.reg,i])
+            Ctx_gui.log("命中："+i)

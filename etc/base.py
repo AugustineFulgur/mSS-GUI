@@ -15,7 +15,6 @@ class CURD(Enum):
     ADD=0
     DELETE=1
     REPLACE=2
-    LOOKUP=3
 
 class Ctx_global(ABC):
 
@@ -34,29 +33,40 @@ class Ctx_global(ABC):
 
 class Ctx_base(ABC):
 
+    @classmethod # 老抽
+    def code(cls,req):
+        for k,v in req.headers.items():
+            print(v)
+            if k.lower()=="content-type": return v.split("charset=")[1].split(";")[0].strip()
+        return "utf-8"
+
     def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
         self.rr=rr #[RR]
 
     def request(self, flow: HTTPFlow):
+        if flow.request.url.endswith(".mss"):
+            return False # 排除自身请求
         if not RR.REQUEST in self.rr:
             return False
-        if GLOBAL_DOMAIN!=None: #判断domain是否在范围内
-            for i in GLOBAL_DOMAIN:
+        if GLOBAL.get("全局范围")!=None: #判断domain是否在范围内
+            for i in GLOBAL["全局范围"]:
                 if i[0]=="!":
                     return not fnmatch(flow.request.host,i[1:])
                 else:
-                    return fnmatch(flow.request.host,GLOBAL_DOMAIN)
+                    return fnmatch(flow.request.host,GLOBAL.get("全局范围"))
         return True
     
     def response(self, flow: HTTPFlow):
+        if flow.request.url.endswith(".mss"):
+            return False # 排除自身请求
         if not RR.RESPONSE in self.rr:
             return False
-        if GLOBAL_DOMAIN!=None: #判断domain是否在范围内
-            for i in GLOBAL_DOMAIN:
+        if GLOBAL.get("全局范围")!=None: #判断domain是否在范围内
+            for i in GLOBAL.get("全局范围"):
                 if i[0]=="!":
                     return not fnmatch(flow.request.host,i[1:])
                 else:
-                    return fnmatch(flow.request.host,GLOBAL_DOMAIN)
+                    return fnmatch(flow.request.host,GLOBAL.get("全局范围"))
         return True
 
 class Ctx_hit_base(Ctx_base,ABC): 
@@ -74,8 +84,6 @@ class Ctx_hit_base(Ctx_base,ABC):
                     print(match)
                     print(self.where_hit(match))
                     flow.request.text = flow.request.text.replace(match, self.where_hit(match))
-                # DEBUG
-                print(flow.request.text)
 
     def response(self, flow: HTTPFlow):
         if not super().response(flow): return
@@ -83,8 +91,6 @@ class Ctx_hit_base(Ctx_base,ABC):
                 matches = re.findall(self.regex, flow.response.text)
                 for match in matches:
                     flow.response.text = flow.response.text.replace(match, self.where_hit(match))
-                # DEBUG
-                print(flow.response.text)
 
     @abstractmethod
     def where_hit(self,string):
