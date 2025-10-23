@@ -28,13 +28,12 @@
 本工具支持GUI页面（需要启用插件Ctx_gui），安全起见工具启动时会生成一个token，你也可以在settings里自定义一个固定的token。
 ![alt text](img/2.png)
 
-可以在任意路由后方添加console.mss以打开控制台：
+可以通过访问mss.local/console.mss或1.1.1.1/console.mss来使用GUI界面:
 
 ![alt text](img/3.png)
 
-输入生成的token以使用控制台。
+由于mitmdump本身输出比较繁杂，组件的输出不但会在终端输出中显示，也会在GUI控制台中显示以便查询。部分继承GUI类的组件在启动时也会在GUI界面注册面板以自定义输出（插件配置请在run.py中修改，这个文件是**热加载**的，所以修改后无需重启即可生效）。
 
-由于mitmdump本身输出比较繁杂，组件的输出不但会在终端输出中显示，也会在GUI控制台中显示。
 同时，也可以在控制台中自由修改配置。
 
 ### 1.2 使用示例-加密功能
@@ -79,6 +78,9 @@ Ctx_decrypt(
 
 #### Ctx_hit_base < Ctx_base
 - regex[str] 捕获表达式，这个类**仅捕获请求体和响应体**。需要注意的是对请求体`a=1`，表达式`a=[0-9]*`捕获`a=1`，表达式`a=([0-9]*)`捕获1。
+
+#### mi_gui.GUI < ABC
+- showname[str] 可选，为在页面中显式的插件名，可通过自定义插件名以区分同时启用的多个插件
 
 ### 2.1 加解密
 
@@ -194,7 +196,6 @@ Ctx_ua(ua)
 ```
 
 #### mi_notrace.Ctx_drop < Ctx_global
-
 自动killurl中带有关键词的包。
 - hint[list] 为**正则表达式**列表，当任意一个正则表达式匹配到URL时丢包，如"4399\.com.*report$"匹配http://www.4399.com/123/report。
 ``` python
@@ -207,11 +208,47 @@ Ctx_drop(hint)
 
 ### 2.4 GUI
 
-#### mi_gui.Ctx_gui < Ctx_global
+带有GUI界面的插件。
 
+#### mi_gui.Ctx_GUI
 无参插件，GUI插件。
 
-启用时，请在任意url后面添加console.mss以访问控制台。相见节#1.1。
+启用时，请通过访问mss.local/console.mss来使用GUI界面。详见节#1.1。
+
+**请注意，请在其它继承GUI类的插件后调用此插件，否则插件无法正常初始化。**
+
+#### mi_modify.Ctx_rlookup < Ctx_base, GUI
+**这个类会在GUI界面展示捕获值，点击行和列以复制结果。**
+
+![alt text](img/4.png)
+
+针对请求体和响应体的正则查找类。
+- reg[list] 使用的正则捕获组列表
+``` python
+Ctx_all(
+    [RR.REQUEST],
+    ["([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})"] # 捕获IP
+    "捕获IP" # showname，请参考基类中GUI的定义
+)
+
+Ctx_all(rr,reg,showname="RLOOKUP")
+```
+
+### 2.5 webpack
+
+处理webpack类网站插件。
+
+#### mi_webpack.Ctx_forcejs
+无参插件，自动提取加载webpack中的js文件，可配合Ctx_rlookup以快速提取API。**在已经加载过的网站使用前请清除缓存。**
+
+使用插件前：
+
+![alt text](img/5.png)
+
+使用插件后：
+
+![alt text](img/6.png)
+
 
 ## 3 全局变量
 
@@ -222,10 +259,11 @@ Ctx_drop(hint)
 
 ## -1 更新日志
 
-`一些不必要的更新是在凑COMMIT。`
+鉴于项目定位的变更（我想把它从单纯的脚本合集变成简单易用的工具），工具改名为mSS-GUI，原名为mitmproxySecurityScripts。
 这个项目会持续更新，如有需求可以向我的github邮箱发送邮件。
 
-由于项目在施工中，每次commit可能会存在部分未完成的代码。使用脚本请参考文档。
+由于项目长期处于施工中，每次commit可能会存在部分未完成的代码，这并不影响使用。
+脚本的具体使用方法请参考文档。
 - 0.0.1 开天辟地，拥有基础功能
 - 0.0.2 修复BUG
 - 0.0.3 完善文档部分
@@ -234,4 +272,4 @@ Ctx_drop(hint)
 - 0.0.6 DEBUG，修复导入问题
 - 0.0.7 重构合并了Ctx_head和Ctx_content，新增Ctx_drop
 - 0.0.8 新增GUI界面；优化modify模块
-- 0.0.8.1 |存档| GUI版本1
+- 0.1.0 GUI完成；优化modify模块并为部分插件增加GUI部分。现在可以通过访问mss.local/console.mss来使用GUI界面^ ^~

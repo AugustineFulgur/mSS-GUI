@@ -30,7 +30,7 @@ class Ctx_head(Ctx_base):
         elif self.curd==CURD.LOOKUP:
             # CAUTION
             # 请在这里修改以适配
-            Ctx_gui.log("捕获HEADER"+req.headers[self.s1])
+            Ctx_gui.logger("捕获HEADER"+req.headers[self.s1])
 
 class Ctx_content(Ctx_base):
 
@@ -69,21 +69,28 @@ class Ctx_all(Ctx_base):
         self.head.response(flow)
         self.content.response(flow)
 
-class Ctx_rlookup(Ctx_base,Ctx_addon):
+class Ctx_rlookup(Ctx_base,GUI):
 
-    def __init__(self, rr, reg):
+    def __init__(self, rr, reg:list,showname="RLOOKUP"):
         Ctx_base.__init__(self,rr)
-        Ctx_addon.__init__(self,"RLOOKUP",["关键词","结果"])
+        GUI.__init__(self,showname,["关键词","结果"])
         self.reg=reg
 
     def request(self, flow):
         if not super().request(flow): return
-        for i in re.findall(self.reg,flow.request.raw_content.decode(Ctx_base.code(flow.request))):
-            self.addon.log.append([self.reg,i])
-            Ctx_gui.log("命中："+i)
+        print("request?")
+        request=Ctx_base.autocode(flow.request,flow.request.raw_content)
+        for r in self.reg:
+            for i in re.findall(r,request,re.DOTALL):
+                self.log.append([r,i])
+                Ctx_gui.logger("命中："+i)
     
     def response(self, flow):
         if not super().response(flow): return
-        for i in re.findall(self.reg,flow.response.raw_content.decode(Ctx_base.code(flow.response))):
-            self.addon.log.append([self.reg,i])
-            Ctx_gui.log("命中："+i)
+        response=Ctx_base.autocode(flow.response,flow.response.raw_content)
+        print(self.reg)
+        for r in self.reg:
+            print(r)
+            for i in re.findall(r,response,re.DOTALL):
+                self.log.append([r,i])
+                Ctx_gui.logger("命中："+i)

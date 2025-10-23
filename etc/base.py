@@ -4,6 +4,8 @@ import re
 from settings import *
 from mitmproxy.http import HTTPFlow
 from enum import Enum
+import gzip
+from io import BytesIO
 from fnmatch import fnmatch # 一般情况下，HOST用通配符匹配 有人统一一下匹配方法吗
 
 # 最近CS写多了 但是python的OOP还是写着别扭
@@ -22,6 +24,7 @@ class Ctx_global(ABC):
         self.rr=rr #[RR]
     
     def request(self, flow: HTTPFlow):
+        print("GOIN")
         if not RR.REQUEST in self.rr:
             return False
         return True
@@ -33,12 +36,31 @@ class Ctx_global(ABC):
 
 class Ctx_base(ABC):
 
-    @classmethod # 老抽
-    def code(cls,req):
+    @classmethod  # 优先级 预设 > utf8 > gbk > force(自动识别)
+    def autocode(cls,req,b):
+        code=[]
+        auto=GLOBAL.get("默认编码形式")
+        content_encoding = req.headers.get("Content-Encoding", "").lower()
+        if "gzip" in content_encoding:
+            try:
+                with gzip.GzipFile(fileobj=BytesIO(b), mode="rb") as f:
+                    b = f.read()
+            except gzip.BadGzipFile:
+                pass
         for k,v in req.headers.items():
-            print(v)
-            if k.lower()=="content-type": return v.split("charset=")[1].split(";")[0].strip()
-        return "utf-8"
+            try:
+                if k.lower()=="content-type": auto=v.split("charset=")[1].split(";")[0].strip()
+            except:
+                print("CHARSET ERROR "+v)
+        code.append("utf-8")
+        code.append("gbk")
+        for i in code:
+            try:
+                return b.decode(i)
+            except:
+                pass
+        print("ERROR? 解码失败")
+        return b.decode(auto,errors="ignore")
 
     def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
         self.rr=rr #[RR]
@@ -79,10 +101,7 @@ class Ctx_hit_base(Ctx_base,ABC):
         if not super().request(flow): return
         if flow.request.content:
                 matches = re.findall(self.regex, flow.request.text)
-                print(matches)
                 for match in matches:
-                    print(match)
-                    print(self.where_hit(match))
                     flow.request.text = flow.request.text.replace(match, self.where_hit(match))
 
     def response(self, flow: HTTPFlow):

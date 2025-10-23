@@ -8,7 +8,7 @@ from mi.mi_gui import *
 from enum import Enum
 
 addons = [
-    Ctx_rlookup([RR.RESPONSE],"ht(.*)l"),
-    Ctx_gui(),
-    # Ctx_forcejs(),
+    #Ctx_rlookup([RR.RESPONSE],[r"[\"'](/[a-zA-Z0-9_\?=]{2,})[\"']"],"路由提取"),
+    Ctx_gui(), #请保证GUI在其它继承GUI类的插件调用后被调用
+    Ctx_forcejs(),
 ]

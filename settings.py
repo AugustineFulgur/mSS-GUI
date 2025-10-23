@@ -17,7 +17,7 @@ class Config:
                     #！！！此处定义全局变量！！！
                     cls.__instance__._data = {
                         "全局范围": "14.145.128.138",
-                        "默认编码形式": "utf8", # UTF8 GBK... 为空时使用自动识别
+                        "默认编码形式": "utf8", # UTF8 GBK... 为空时使用自动识别 说实话这个中文名也挺抽象的
                     }
         return cls.__instance__
     
