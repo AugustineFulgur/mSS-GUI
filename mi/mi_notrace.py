@@ -43,4 +43,4 @@ class Ctx_drop(Ctx_global):
         for i in self.hint:
             if re.search(i, url):
                 flow.kill()
-# 自动禁止蜜罐信息收集（也就是drop所有qq、知乎、微博、贴吧的包，考虑仅在渗透时开启） 使用Ctx_drop的特定配置。
+# 自动禁止蜜罐信息收集（也就是drop所有qq、知乎、微博、贴吧的包，考虑仅在渗透时开启） 使用Ctx_drop的特定配置。 这个施工中

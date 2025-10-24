@@ -1,4 +1,4 @@
-# GUI类，默认地址为/[TOKEN]-console.mss
+# GUI类，默认地址为/console.mss
 from etc.base import *
 from settings import *
 import os
@@ -8,7 +8,7 @@ from jinja2 import Template
 import json
 
 
-# 这个理论上也是单例，但是这语言写单例麻烦死了
+#这个理论上也是单例，但是这语言写单例麻烦死了
 class Ctx_gui(Ctx_global):
 
     addons=[]
@@ -28,7 +28,6 @@ class Ctx_gui(Ctx_global):
 
     @classmethod
     def get_addons_log(cls):
-        # 只更新增量数据，前端使用IndexedDB存储
         re={}
         for i in cls.addons:
             for k,v in i.addons_log().items():
@@ -43,7 +42,7 @@ class Ctx_gui(Ctx_global):
         print("当前token为："+self.token)
 
     def request(self,flow):
-        # 控制台去掉token设置，不过token还有用
+        #控制台去掉token设置，不过token还有用
         if (flow.request.headers.get("Host") if flow.request.headers.get("Host") else flow.request.host) not in ["mss.local"]: return # console的路径为mss.local/console.mss
         if flow.request.path.endswith("console.mss"): # console就不添加了
             with open("console.html","r",encoding="utf-8") as c: # 

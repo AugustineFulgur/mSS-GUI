@@ -26,15 +26,16 @@
 ### 1.1 GUI
 
 本工具支持GUI页面（需要启用插件Ctx_gui），安全起见工具启动时会生成一个token，你也可以在settings里自定义一个固定的token。
+
 ![alt text](img/2.png)
 
-可以通过访问mss.local/console.mss或1.1.1.1/console.mss来使用GUI界面:
+可以通过访问mss.local/console.mss来使用GUI界面:
 
 ![alt text](img/3.png)
 
 由于mitmdump本身输出比较繁杂，组件的输出不但会在终端输出中显示，也会在GUI控制台中显示以便查询。部分继承GUI类的组件在启动时也会在GUI界面注册面板以自定义输出（插件配置请在run.py中修改，这个文件是**热加载**的，所以修改后无需重启即可生效）。
 
-同时，也可以在控制台中自由修改配置。
+同时，也可以在控制台中自由修改全局配置。
 
 ### 1.2 使用示例-加密功能
 
@@ -197,7 +198,7 @@ Ctx_ua(ua)
 
 #### mi_notrace.Ctx_drop < Ctx_global
 自动killurl中带有关键词的包。
-- hint[list] 为**正则表达式**列表，当任意一个正则表达式匹配到URL时丢包，如"4399\.com.*report$"匹配http://www.4399.com/123/report。
+- hint[list] 为**正则表达式**列表，当任意一个正则表达式匹配到URL时丢包，如"4399\.com.*report$"匹配[http://www.4399.com/123/report]()。
 ``` python
 Ctx_drop(
     ["report","aegis.qq.com"]
@@ -273,3 +274,4 @@ Ctx_all(rr,reg,showname="RLOOKUP")
 - 0.0.7 重构合并了Ctx_head和Ctx_content，新增Ctx_drop
 - 0.0.8 新增GUI界面；优化modify模块
 - 0.1.0 GUI完成；优化modify模块并为部分插件增加GUI部分。现在可以通过访问mss.local/console.mss来使用GUI界面^ ^~
+- 0.1.1 文档捉虫；完善GUI内容，增加API提取插件
