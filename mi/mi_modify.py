@@ -48,7 +48,7 @@ class Ctx_content(Ctx_base):
         self.do_curd(flow.response)
 
     def do_curd(self,req):
-        req.text.replace(self.s,self.s2)
+        req.text=Ctx_base.autocode(req,req.raw_content)
 
 class Ctx_all(Ctx_base):
     
@@ -78,8 +78,7 @@ class Ctx_rlookup(Ctx_base,GUI):
 
     def request(self, flow):
         if not super().request(flow): return
-        print("request?")
-        request=Ctx_base.autocode(flow.request,flow.request.raw_content)
+        request=Ctx_base.autocode(flow.request,Ctx_base.raw_request(flow.request))
         for r in self.reg:
             for i in re.findall(r,request,re.DOTALL):
                 self.log.append([r,i])
@@ -87,10 +86,9 @@ class Ctx_rlookup(Ctx_base,GUI):
     
     def response(self, flow):
         if not super().response(flow): return
-        response=Ctx_base.autocode(flow.response,flow.response.raw_content)
-        print(self.reg)
+        response=Ctx_base.autocode(flow.response,Ctx_base.raw_response(flow.response))
+        print(response)
         for r in self.reg:
-            print(r)
             for i in re.findall(r,response,re.DOTALL):
                 self.log.append([r,i])
                 Ctx_gui.logger("命中："+i)

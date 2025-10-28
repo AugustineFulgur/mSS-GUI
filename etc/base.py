@@ -61,6 +61,21 @@ class Ctx_base(ABC):
                 pass
         print("ERROR? 解码失败")
         return b.decode(auto,errors="ignore")
+    
+    @classmethod
+    def raw_request(cls,request) -> bytes:
+        return f"{request.method} {request.path} {request.http_version or 'HTTP/1.1'}\r\n".encode("utf-8") \
+            + request.headers.__bytes__() \
+            + b"\r\n" \
+            + request.raw_content
+    
+    @classmethod
+    def raw_response(cls,response) -> bytes:
+        return f"{response.http_version or 'HTTP/1.1'} {str(response.status_code)} {response.reason or ''}\r\n".encode("utf-8") \
+            + response.headers.__bytes__() \
+            + b"\r\n" \
+            + response.raw_content
+
 
     def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
         self.rr=rr #[RR]
@@ -70,12 +85,12 @@ class Ctx_base(ABC):
             return False # 排除自身请求
         if not RR.REQUEST in self.rr:
             return False
-        if GLOBAL.get("全局范围")!=None: #判断domain是否在范围内
+        if GLOBAL.get("全局范围")!="": #判断domain是否在范围内
             for i in GLOBAL["全局范围"]:
                 if i[0]=="!":
-                    return not fnmatch(flow.request.host,i[1:])
+                    return not fnmatch((flow.request.headers.get("Host") if flow.request.headers.get("Host") else flow.request.host),i[1:])
                 else:
-                    return fnmatch(flow.request.host,GLOBAL.get("全局范围"))
+                    return fnmatch((flow.request.headers.get("Host") if flow.request.headers.get("Host") else flow.request.host),GLOBAL.get("全局范围"))
         return True
     
     def response(self, flow: HTTPFlow):
