@@ -87,7 +87,6 @@ class Ctx_rlookup(Ctx_base,GUI):
     def response(self, flow):
         if not super().response(flow): return
         response=Ctx_base.autocode(flow.response,Ctx_base.raw_response(flow.response))
-        print(response)
         for r in self.reg:
             for i in re.findall(r,response,re.DOTALL):
                 self.log.append([r,i])

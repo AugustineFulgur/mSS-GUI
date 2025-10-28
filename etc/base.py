@@ -40,8 +40,7 @@ class Ctx_base(ABC):
     def autocode(cls,req,b):
         code=[]
         auto=GLOBAL.get("默认编码形式")
-        content_encoding = req.headers.get("Content-Encoding", "").lower()
-        if "gzip" in content_encoding:
+        if "gzip" in req.headers.get("Content-Encoding", "").lower():
             try:
                 with gzip.GzipFile(fileobj=BytesIO(b), mode="rb") as f:
                     b = f.read()
@@ -71,10 +70,18 @@ class Ctx_base(ABC):
     
     @classmethod
     def raw_response(cls,response) -> bytes:
+        # 额外处理下GZIP
+        content=response.raw_content
+        if "gzip" in response.headers.get("Content-Encoding", "").lower():
+            try:
+                with gzip.GzipFile(fileobj=BytesIO(response.raw_content), mode="rb") as f:
+                    content = f.read()
+            except gzip.BadGzipFile:
+                pass
         return f"{response.http_version or 'HTTP/1.1'} {str(response.status_code)} {response.reason or ''}\r\n".encode("utf-8") \
             + response.headers.__bytes__() \
             + b"\r\n" \
-            + response.raw_content
+            + content
 
 
     def __init__(self,rr=[RR.REQUEST,RR.RESPONSE]):
