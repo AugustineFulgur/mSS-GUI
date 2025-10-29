@@ -37,7 +37,7 @@ class Ctx_global(ABC):
 class Ctx_base(ABC):
 
     @classmethod  # 优先级 预设 > utf8 > gbk > force(自动识别)
-    def autocode(cls,req,b):
+    def autocode(cls,req,b:bytes) -> str: # 谁给我缩进。
         code=[]
         auto=GLOBAL.get("默认编码形式")
         if "gzip" in req.headers.get("Content-Encoding", "").lower():
