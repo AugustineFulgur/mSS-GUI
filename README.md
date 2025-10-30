@@ -1,7 +1,19 @@
 
 # mitmproxySecurityScripts: mSS-GUI a mitm based cyber security tool
 
+![alt text](img/msslogo.png)
+
 基于mitmproxy的安全工具。
+
+## 当前支持功能
+
+| 功能 | 节 | 版本 |
+|--------|------|--------|
+| 关键词加解密 | 2.1 | 0.0.1 |
+| 包修改与关键词查询 | 2.2 | 0.0.3 |
+| UA编辑，微信请求包DROP | 2.3 | 0.0.5 |
+| GUI | 2.4 | 0.1.0 |
+| webpack | 2.5 | 0.1.0（施工中） |
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
@@ -235,6 +247,9 @@ Ctx_all(
 Ctx_all(rr,reg,showname="RLOOKUP")
 ```
 
+#### mi_webpack.Ctx_webapi < Ctx_base, GUI
+
+
 ### 2.5 webpack
 
 处理webpack类网站插件。
@@ -249,6 +264,17 @@ Ctx_all(rr,reg,showname="RLOOKUP")
 使用插件后：
 
 ![alt text](img/6.png)
+
+#### mi_webpack.Ctx_packeaziler
+无参插件，优化未提升作用域下的代码（未分块的代码？）。**注：在控制台可以提取webpack://的时候不需要开启此插件**
+
+使用插件前：
+
+![alt text](img/8.png)
+
+使用插件后：
+
+![alt text](img/7.png)
 
 
 ## 3 全局变量
@@ -274,4 +300,4 @@ Ctx_all(rr,reg,showname="RLOOKUP")
 - 0.0.7 重构合并了Ctx_head和Ctx_content，新增Ctx_drop
 - 0.0.8 新增GUI界面；优化modify模块
 - 0.1.0 GUI完成；优化modify模块并为部分插件增加GUI部分。现在可以通过访问mss.local/console.mss来使用GUI界面^ ^~
-- 0.1.1 文档捉虫；完善GUI内容，增加API提取插件
+- 0.1.1 文档捉虫；完善GUI内容，增加Ctx_packeaziler（这里我给一个依赖库提了PR，要等这个依赖库更新才能支持新功能）

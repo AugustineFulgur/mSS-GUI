@@ -1,0 +1,6 @@
+esprima==4.0.1
+gmssl==3.2.2
+Jinja2==3.1.6
+mitmproxy==9.0.1
+pycryptodome==3.23.0
+Requests==2.32.5
