@@ -13,7 +13,9 @@
 | 包修改与关键词查询 | 2.2 | 0.0.3 |
 | UA编辑，微信请求包DROP | 2.3 | 0.0.5 |
 | GUI | 2.4 | 0.1.0 |
-| webpack | 2.5 | 0.1.0（施工中） |
+| webpack-提取打包器js | 2.5 | 0.1.0 |
+| cors解限制（https网站强制httpsjs加载） | 2.3 | 0.1.4 |
+| webpack-优化未提升作用域下的代码 | 2.5 | 0.1.4 |
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
@@ -207,6 +209,9 @@ Ctx_ua(
 
 Ctx_ua(ua)
 ```
+
+#### mi_notrace.Ctx_cors < Ctx_global
+无参插件。让属于https网站的http的包走https协议，并放宽网站的CORS限制，以使得网站中其它资源尽情加载。
 
 #### mi_notrace.Ctx_drop < Ctx_global
 自动killurl中带有关键词的包。

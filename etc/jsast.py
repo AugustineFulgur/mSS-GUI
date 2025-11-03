@@ -19,15 +19,3 @@ class AST(Visitor,ABC):
         finally:
             self.code=esprima.parseModule(self.js)
         self.jsafter=escodegen.generate(self.visit(self.code))
-
-
-
-if __name__ == "__main__":
-    
-
-    with open("1.js","r",encoding="utf8") as f:
-        js_code=f.read()
-
-    extractor = AST(js_code)
-    with open("2.js","w",encoding="utf8") as f:
-        f.write(escodegen.generate(extractor.jsafter))
