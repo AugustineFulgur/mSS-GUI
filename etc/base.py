@@ -46,11 +46,10 @@ class Ctx_base(ABC):
                     b = f.read()
             except gzip.BadGzipFile:
                 pass
-        for k,v in req.headers.items():
             try:
-                if k.lower()=="content-type": auto=v.split("charset=")[1].split(";")[0].strip()
+                auto=req.headers.get("Content-Encoding", "").split("charset=")[1].split(";")[0].strip()
             except:
-                print("CHARSET ERROR "+v)
+                print("CHARSET ERROR ")
         code.append("utf-8")
         code.append("gbk")
         for i in code:

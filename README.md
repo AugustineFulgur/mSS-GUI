@@ -16,6 +16,7 @@
 | webpack-提取打包器js | 2.5 | 0.1.0 |
 | cors解限制（https网站强制httpsjs加载） | 2.3 | 0.1.4 |
 | webpack-优化未提升作用域下的代码 | 2.5 | 0.1.4 |
+| 插入js代码 | 2.6 | 0.1.5 |
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
@@ -281,6 +282,25 @@ Ctx_all(rr,reg,showname="RLOOKUP")
 
 ![alt text](img/7.png)
 
+### 2.6 monkey
+
+向页面注入js脚本的插件。效果如图：
+
+![alt text](img/9.png)
+
+- monkeylist[list[tuple(filename:str, type:MONKEYSCRIPT )]] 使用的脚本文件名和插入方式
+``` python
+Ctx_monkey(
+    [
+        (
+            "hello.js", # 脚本文件名，默认放在monkey文件夹下
+            MONKEYSCRIPT.INNERTAIL # 可取值MONKEYSCRIPT.INNERHEAD/MONKEYSCRIPT.INNERTAIL/MONKEYSCRIPT.OUTSIDE，对应文档开头、文档结尾、额外文件加载（script.src方式）。
+        )
+    ]
+)
+
+Ctx_monkey(monkey)
+```
 
 ## 3 全局变量
 

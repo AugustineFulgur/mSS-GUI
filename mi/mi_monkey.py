@@ -6,6 +6,7 @@ from enum import Enum
 from mi.mi_gui import Ctx_gui
 from mitmproxy import http
 import re
+from lxml import etree # 总而言之用解析效果好点
 
 MONKEY_FOLDER = "monkey/"  # 文件统一放在根目录monkey下
 
@@ -38,23 +39,25 @@ class Ctx_monkey(Ctx_base):
     def response(self, flow):
         if not super().response(flow):
             return
+        print("MONKEY1")
         if "text/html" in flow.response.headers.get("content-type", ""):
             # 啥时候训练个AI专门识别混淆？
             # 对返回包带有text/html的包进行注入
-            innerscript_head = ["<script>"]
-            innerscript_tail = ["<script>"]
-            outscript = []
+            print("MONKEY2")
+            rawhtml=Ctx_base.autocode(flow.response, flow.response.raw_content)
+            ht=etree.HTML(rawhtml)
+            hroot=ht.xpath("//html")[0]
             for f, m in self.monkey:
                 if m == MONKEYSCRIPT.OUTSIDE:
-                    outscript.append(f"<script src=\"monkey/{TOKEN}-{f}\"/>\n")
+                    _=etree.Element("script")
+                    _.set("src",f"{TOKEN}-{f}")
+                    hroot.append(_)
                 with open(MONKEY_FOLDER+f, "r", encoding="utf8") as ff:
+                    _=etree.Element("script")
+                    _.text=ff.read()
                     if m == MONKEYSCRIPT.INNERHEAD:
-                        innerscript_head.append(ff.read())
+                        hroot.insert(0,_)
                     elif m == MONKEYSCRIPT.INNERTAIL:
-                        innerscript_tail.append(ff.read())
-            innerscript_head.append("</script>")
-            innerscript_tail.append("</script>")
-            rawhtml=Ctx_base.autocode(flow.response, flow.response.raw_content)
-            rawhtml.replace("<html>","<html>"+''.join(innerscript_head))
-            rawhtml.replace("</html>","</html>"+''.join(innerscript_tail)+''.join(outscript))
-            flow.response.text=rawhtml
+                        hroot.append(_)
+            print("MONKEY")
+            flow.response.text=etree.tostring(ht,encoding="utf8",pretty_print=True,method="html").decode("utf8")
