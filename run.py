@@ -14,4 +14,5 @@ addons = [
     #Ctx_forcejs(),
     #Ctx_packeaziler(),
     #Ctx_monkey([("hello.js",MONKEYSCRIPT.INNERTAIL)])
+    Ctx_antiguard()
 ]

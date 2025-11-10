@@ -272,7 +272,7 @@ Ctx_all(rr,reg,showname="RLOOKUP")
 ![alt text](img/6.png)
 
 #### mi_webpack.Ctx_packeaziler
-无参插件，优化未提升作用域下的代码（未分块的代码？）。**注：在控制台可以提取webpack://的时候不需要开启此插件**
+无参插件，优化未提升作用域下的代码（eval-source-map）。**注：在控制台可以提取webpack://的时候不需要开启此插件**
 
 使用插件前：
 
