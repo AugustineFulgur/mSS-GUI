@@ -282,6 +282,26 @@ Ctx_all(rr,reg,showname="RLOOKUP")
 
 ![alt text](img/7.png)
 
+#### mi_webpack.Ctx_antiguard
+清除路由guard，也就是vue前端的鉴权。
+
+使用插件前：
+
+![alt text](img/10.png)
+
+使用插件后：
+
+![alt text](img/11.png)
+
+- antiroute[list] 可选，指示需要去掉的路由位置（如未登陆强制跳转到login，此处填写["login"]会将所有next(".\*login.\*")置空），如果不填写会置空所有guard。
+``` python
+Ctx_antiguard(
+    ["login","index"] # 要绕过的guard 或不填
+)
+
+Ctx_antiguard(antiroute)
+```
+
 ### 2.6 monkey
 
 向页面注入js脚本的插件。效果如图：
@@ -326,3 +346,6 @@ Ctx_monkey(monkey)
 - 0.0.8 新增GUI界面；优化modify模块
 - 0.1.0 GUI完成；优化modify模块并为部分插件增加GUI部分。现在可以通过访问mss.local/console.mss来使用GUI界面^ ^~
 - 0.1.1 文档捉虫；完善GUI内容，增加Ctx_packeaziler（这里我给一个依赖库提了PR，要等这个依赖库更新才能支持新功能）
+- 0.1.4 增加Ctx_packeaziler和Ctx_cors，完成AST支持
+- 0.1.5.2（0.1.6） 增加monkey支持
+- 0.2.1 增加Ctx_antiguard 完成全部路由守卫破解

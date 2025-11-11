@@ -9,6 +9,7 @@ from etc.jsast import AST
 import esprima
 from esprima.visitor import Visited
 from esprima.nodes import *
+import etc.__escodegen as escodegen
 from mi.mi_gui import Ctx_gui
 
 
@@ -52,11 +53,16 @@ class Ctx_antiguard(Ctx_base):
 
         def visit_CallExpression(
             self, node
-        ):  # 遍历方式充满了一种幽默感，评价是不如traverse
+        ):  # 死插件缩进我看着难受不缩进我也难受
             if isinstance(node.callee,StaticMemberExpression) and len(node.arguments)>0 and isinstance(node.arguments[0],ArrowFunctionExpression) and len(node.arguments[0].params)==3:
                 if node.callee.property.name in ["beforeEach","afterEach","beforeResolve"]:
                     Ctx_gui.logger(f"清除hook，类型{node.callee.property.name}")
-                    node.arguments[0].body.body = [esprima.parseScript("console.log('已清除guard！')"),esprima.parseScript(f"{node.arguments[0].params[2].name}()")]
+                    if self.anti==[]:
+                        node.arguments[0].body.body = [esprima.parseScript("console.log('已清除guard！')"),esprima.parseScript(f"{node.arguments[0].params[2].name}()")]
+                    else:
+                        nstr=escodegen.generate(node)
+                        for i in self.anti: # 由于你py没有traverse 我不想做算法题，这里用原始方法 但是又由于esprima也是基于re的，相当于没降级 谢谢哦^ ^
+                            node=esprima.parseScript(re.sub(f'{node.arguments[0].params[2].name}\(.*?{i}.*?\)',f'{node.arguments[0].params[2].name}()',nstr))
             result=yield Visited(node.__dict__)
             yield result #不支持写一起 也很幽默
 
@@ -65,12 +71,18 @@ class Ctx_antiguard(Ctx_base):
                 # 这个写法好省电 感动了
                 if node.key.name in ["beforeEnter","beforeRouteEnter","beforeRouteUpdate","beforeRouteLeave"]:
                     Ctx_gui.logger(f"清除hook，类型{node.key.name}")
-                    node.value.body.body = [esprima.parseScript("console.log('已清除guard！')"),esprima.parseScript(f"{node.value.params[2].name}()")]
+                    if self.anti==[]:
+                        node.value.body.body = [esprima.parseScript("console.log('已清除guard！')"),esprima.parseScript(f"{node.value.params[2].name}()")]
+                    else:
+                        nstr=escodegen.generate(node)
+                        for i in self.anti: # 由于你py没有traverse 我不想做算法题，这里用原始方法 但是又由于esprima也是基于re的，相当于没降级 谢谢哦^ ^
+                            node=esprima.parseScript(re.sub(f'{node.value.params[2].name}\(.*?{i}.*?\)',f'{node.value.params[2].name}()',nstr))
             result=yield Visited(node.__dict__)
             yield result #不支持写一起 也很幽默
     
-    def __init__(self):
+    def __init__(self,antiroute=[]):
         super().__init__([RR.RESPONSE])
+        self.anti=antiroute
 
     def response(self, flow):
         if not super().response(flow):
