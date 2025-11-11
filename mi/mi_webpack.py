@@ -56,8 +56,7 @@ class Ctx_antiguard(Ctx_base):
             if isinstance(node.callee,StaticMemberExpression) and len(node.arguments)>0 and isinstance(node.arguments[0],ArrowFunctionExpression) and len(node.arguments[0].params)==3:
                 if node.callee.property.name in ["beforeEach","afterEach","beforeResolve"]:
                     Ctx_gui.logger(f"清除hook，类型{node.callee.property.name}")
-                    node.callee.property.name="expireGuard"
-                    node.arguments[0].body.body = [esprima.parseScript("console.log('已清除guard！')")]
+                    node.arguments[0].body.body = [esprima.parseScript("console.log('已清除guard！')"),esprima.parseScript(f"{node.arguments[0].params[2].name}()")]
             result=yield Visited(node.__dict__)
             yield result #不支持写一起 也很幽默
 
@@ -66,8 +65,7 @@ class Ctx_antiguard(Ctx_base):
                 # 这个写法好省电 感动了
                 if node.key.name in ["beforeEnter","beforeRouteEnter","beforeRouteUpdate","beforeRouteLeave"]:
                     Ctx_gui.logger(f"清除hook，类型{node.key.name}")
-                    node.key.name="expireGuard"
-                    node.value.body.body = [esprima.parseScript("console.log('已清除guard！')")]
+                    node.value.body.body = [esprima.parseScript("console.log('已清除guard！')"),esprima.parseScript(f"{node.value.params[2].name}()")]
             result=yield Visited(node.__dict__)
             yield result #不支持写一起 也很幽默
     
