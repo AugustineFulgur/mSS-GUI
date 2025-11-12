@@ -90,6 +90,10 @@ class Ctx_antiguard(Ctx_base):
 
     class __ast(AST):
 
+        def __init__(self,js:str,anti:list):
+            self.anti=anti
+            super().__init__(js)
+
         def visit_CallExpression(self, node):  # 死插件缩进我看着难受不缩进我也难受
             if isinstance(node.callee, StaticMemberExpression) and len(node.arguments) > 0 and isinstance(node.arguments[0], ArrowFunctionExpression) and len(node.arguments[0].params) == 3:
                 if node.callee.property.name in ["beforeEach", "afterEach", "beforeResolve"]:
@@ -133,7 +137,7 @@ class Ctx_antiguard(Ctx_base):
         content = Ctx_base.autocode(flow.response, flow.response.raw_content)
         if flow.request.url.endswith(".js"):
             flow.response.set_content(
-                Ctx_antiguard.__ast(content).jsafter.encode("utf8")
+                Ctx_antiguard.__ast(content,self.anti).jsafter.encode("utf8")
             )
 
 
