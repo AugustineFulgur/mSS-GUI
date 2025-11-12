@@ -17,6 +17,7 @@
 | cors解限制（https网站强制httpsjs加载） | 2.3 | 0.1.4 |
 | webpack-优化未提升作用域下的代码 | 2.5 | 0.1.4 |
 | 插入js代码 | 2.6 | 0.1.5 |
+| webpack-去除routerguard | 2.5 | 0.2.1 |
 
 ## 0 为什么使用mitmproxy（mitmdump）
 1. 安装方便，使用`pip install mitmproxy`即可
