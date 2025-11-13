@@ -55,10 +55,12 @@ class Ctx_router(Ctx_base):
         def visit_ArrayExpression(self,node):
             pass
 
-# proxy三个重要变量以供monkey脚本调用
-# 这三个变量是哪三个可以见我的文章
+# proxy app下变量和函数到window下
 
 class Ctx_proxypack(Ctx_base):
+
+    def __init__(self):
+        super().__init__([RR.RESPONSE])
 
     class __ast(AST):
 
@@ -71,17 +73,28 @@ class Ctx_proxypack(Ctx_base):
         def visit_VariableDeclaration(self,node):
             for i in node.declarations: #这里偷点懒 应该没事 有事再改
                 if isinstance(i.init,ObjectExpression) and (i.init.properties==[] or (isinstance(i.init.properties[0],Property) and isinstance(i.init.properties[0],FunctionExpression))):
-                    self.root.body.body.insert(self.rootindex,esprima.parseScript(self.proxyjs.format(i.id.name,self.appname,escodegen.generate(i.init))))
+                    print("proxy i.name")
+                    i.init=esprima.parseScript(self.proxyjs.format(i.id.name,self.appname,escodegen.generate(i.init.properties[0]) if i.init.properties else [])).body[0].expression
+                    # 调的我也是快升天了
             result = yield Visited(node.__dict__)
             yield result  # 不支持写一起 也很幽默
 
         def visit_FunctionDeclaration(self,node):
-            if len(node.params)==1:
-                for i in node.body.body:
-                    if isinstance(i,ReturnStatement) and len(i.expressions)==2 and isinstance(i.expressions[0],CallExpression) and isinstance(i.expressions[1],ComputedMemberExpression):
-                        node=esprima.parseScript("if(!window.{1}) window.{1}=\{\};".format())
+            print("proxy f.name?")
+            if len(node.params)<2: # 拦截1 和0参数的函数
+                print("proxy f.name")
+                node.body.body.insert(0,esprima.parseScript(f"window.{self.appname}.{node.id.name}={node.id.name};"))
             result = yield Visited(node.__dict__)
             yield result  # 不支持写一起 也很幽默
+        
+    def response(self, flow):
+        if not super().response(flow):
+            return
+        content = Ctx_base.autocode(flow.response, flow.response.raw_content)
+        if flow.request.url.endswith(".js") and "app" in flow.request.url: # 先这么写  后面改
+            flow.response.set_content(
+                Ctx_proxypack.__ast(content,"abc").jsafter.encode("utf8")
+            )
 
 
 # 去除guard

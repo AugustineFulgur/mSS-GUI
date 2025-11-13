@@ -303,6 +303,13 @@ Ctx_antiguard(
 Ctx_antiguard(antiroute)
 ```
 
+#### mi_webpack.Ctx_proxypack
+无参插件，导出部分webpack变量到window作用域（全局）下。这个插件主要是给其他插件使用的。
+
+使用插件后：
+
+![alt text](img/12.png)
+
 ### 2.6 monkey
 
 向页面注入js脚本的插件。效果如图：
