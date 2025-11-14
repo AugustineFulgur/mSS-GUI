@@ -65,27 +65,35 @@ class Ctx_proxypack(Ctx_base):
     class __ast(AST):
 
         def __init__(self, js, appname): # _apphex 
-            with open("monkey/proxy.js","r",encoding="utf8") as f:
-                self.proxyjs=f.read()
+            with open("monkey/proxy-var.js","r",encoding="utf8") as f:
+                self.proxyjsvar=f.read()
+            with open("monkey/proxy-func.js","r",encoding="utf8") as f:
+                self.proxyjsfunc=f.read()
             self.appname=appname
-            super().__init__(js)
+            self.js=js
+            self.code=esprima.parseScript(self.js)
+            self.jsafter=escodegen.generate(self.traverse())
 
-        def visit_VariableDeclaration(self,node):
-            for i in node.declarations: #这里偷点懒 应该没事 有事再改
-                if isinstance(i.init,ObjectExpression) and (i.init.properties==[] or (isinstance(i.init.properties[0],Property) and isinstance(i.init.properties[0],FunctionExpression))):
-                    print("proxy i.name")
-                    i.init=esprima.parseScript(self.proxyjs.format(i.id.name,self.appname,escodegen.generate(i.init.properties[0]) if i.init.properties else [])).body[0].expression
-                    # 调的我也是快升天了
-            result = yield Visited(node.__dict__)
-            yield result  # 不支持写一起 也很幽默
-
-        def visit_FunctionDeclaration(self,node):
-            print("proxy f.name?")
-            if len(node.params)<2: # 拦截1 和0参数的函数
-                print("proxy f.name")
-                node.body.body.insert(0,esprima.parseScript(f"window.{self.appname}.{node.id.name}={node.id.name};"))
-            result = yield Visited(node.__dict__)
-            yield result  # 不支持写一起 也很幽默
+        def traverse(self):
+            # 芝能自己来惹
+            newnodes=[]
+            for node in self.code.body[0].expression.callee.body.body: # 谁能念出来
+                #遍历所有语句，对子一级节点的VariableDeclaration 和 FunctionDeclaration上proxy
+                if isinstance(node,VariableDeclaration):
+                    for i in node.declarations: #这里偷点懒 应该没事 有事再改
+                        # 调的我也是快升天了
+                        newnodes.append(esprima.parseScript(self.proxyjsvar.format(i.id.name,self.appname,escodegen.generate(i.init))).body[0])
+                        newnodes.append(esprima.parseScript(f"{i.id.name}={escodegen.generate(i.init)};"))
+                elif isinstance(node,FunctionDeclaration):
+                    if len(node.params)<2: # 拦截1 和0参数的函数 # 过滤条件不必要
+                        newnodes.append(node)
+                        newnodes.append(esprima.parseScript(f"window.{self.appname}.{node.id.name}={node.id.name};"))
+                    else:
+                        newnodes.append(node)
+                else:
+                    newnodes.append(node)
+            self.code.body[0].expression.callee.body.body=newnodes
+            return self.code
         
     def response(self, flow):
         if not super().response(flow):

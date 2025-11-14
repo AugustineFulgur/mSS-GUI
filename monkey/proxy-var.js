@@ -1,4 +1,4 @@
-(function() {{
+var {0}=(function() {{
     // 这个不是monkey脚本，是给mi_webpack.Ctx_proxypack用的
     // 0 变量原名 1 app.js（_hex） 2 原始赋值语句
     if (!window.{1}) {{
