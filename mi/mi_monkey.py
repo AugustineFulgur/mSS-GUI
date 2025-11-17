@@ -25,32 +25,32 @@ class Ctx_monkey(Ctx_base):
         self.monkey = monkey
 
     def request(self, flow):
-        if not super().request(flow):
+        if not super().request(flow) or "monkey" not in flow.request.url:
             return
-        script=re.search(f"monkey/{TOKEN}-(.*)^",flow.request.url) # 拦截返回monkeyscript
+        script=re.search(f"{TOKEN}-(.*)",flow.request.url) # 拦截返回monkeyscript
         if script:
+            print("?")
             try:
-                with open(MONKEY_FOLDER+script.group(0),"rb",encoding="utf8") as f:
-                    http.Response.make(200,f.read(),{"Content-Type":"application/javascript"})
+                with open(MONKEY_FOLDER+script.group(1),"rb") as f:
+                    flow.response=http.Response.make(200,f.read(),{"Content-Type":"application/javascript"})
             except:
-                Ctx_gui.logger(f"script {script.group(0)} 不存在")
+                Ctx_gui.logger(f"script {script.group(1)} 不存在")
+        return True
 
 
     def response(self, flow):
         if not super().response(flow):
             return
-        print("MONKEY1")
         if "text/html" in flow.response.headers.get("content-type", ""):
             # 啥时候训练个AI专门识别混淆？
             # 对返回包带有text/html的包进行注入
-            print("MONKEY2")
             rawhtml=Ctx_base.autocode(flow.response, flow.response.raw_content)
             ht=etree.HTML(rawhtml)
             hroot=ht.xpath("//html")[0]
             for f, m in self.monkey:
                 if m == MONKEYSCRIPT.OUTSIDE:
                     _=etree.Element("script")
-                    _.set("src",f"{TOKEN}-{f}")
+                    _.set("src",f"monkey/{TOKEN}-{f}")
                     hroot.append(_)
                 with open(MONKEY_FOLDER+f, "r", encoding="utf8") as ff:
                     _=etree.Element("script")
@@ -59,5 +59,5 @@ class Ctx_monkey(Ctx_base):
                         hroot.insert(0,_)
                     elif m == MONKEYSCRIPT.INNERTAIL:
                         hroot.append(_)
-            print("MONKEY")
             flow.response.text=etree.tostring(ht,encoding="utf8",pretty_print=True,method="html").decode("utf8")
+        return True
