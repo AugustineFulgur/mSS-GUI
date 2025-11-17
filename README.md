@@ -312,6 +312,8 @@ Ctx_antiguard(antiroute)
 
 ### 2.6 monkey
 
+请注意，monkey的部分预设脚本和webpack的proxyhook会把一部分变量放在**window.__mss__**下。如果出现未知问题需要排查请参考此条。
+
 向页面注入js脚本的插件。效果如图：
 
 ![alt text](img/9.png)

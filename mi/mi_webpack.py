@@ -64,12 +64,9 @@ class Ctx_proxypack(Ctx_base):
 
     class __ast(AST):
 
-        def __init__(self, js, appname): # _apphex 
+        def __init__(self, js): # _apphex 
             with open("monkey/proxy-var.js","r",encoding="utf8") as f:
                 self.proxyjsvar=f.read()
-            with open("monkey/proxy-func.js","r",encoding="utf8") as f:
-                self.proxyjsfunc=f.read()
-            self.appname=appname
             self.js=js
             self.code=esprima.parseScript(self.js)
             self.jsafter=escodegen.generate(self.traverse())
@@ -77,17 +74,18 @@ class Ctx_proxypack(Ctx_base):
         def traverse(self):
             # 芝能自己来惹
             newnodes=[]
+            newnodes.append(esprima.parseScript(f"window.__mss__={{}}")) #先初始化 你语言还有这事呢？
             for node in self.code.body[0].expression.callee.body.body: # 谁能念出来
                 #遍历所有语句，对子一级节点的VariableDeclaration 和 FunctionDeclaration上proxy
                 if isinstance(node,VariableDeclaration):
                     for i in node.declarations: #这里偷点懒 应该没事 有事再改
                         # 调的我也是快升天了
-                        newnodes.append(esprima.parseScript(self.proxyjsvar.format(i.id.name,self.appname,escodegen.generate(i.init))).body[0])
+                        newnodes.append(esprima.parseScript(self.proxyjsvar.format(i.id.name,escodegen.generate(i.init))).body[0])
                         newnodes.append(esprima.parseScript(f"{i.id.name}={escodegen.generate(i.init)};"))
                 elif isinstance(node,FunctionDeclaration):
                     if len(node.params)<2: # 拦截1 和0参数的函数 # 过滤条件不必要
                         newnodes.append(node)
-                        newnodes.append(esprima.parseScript(f"window.{self.appname}.{node.id.name}={node.id.name};"))
+                        newnodes.append(esprima.parseScript(f"window.__mss__.{node.id.name}={node.id.name};"))
                     else:
                         newnodes.append(node)
                 else:
@@ -101,7 +99,7 @@ class Ctx_proxypack(Ctx_base):
         content = Ctx_base.autocode(flow.response, flow.response.raw_content)
         if flow.request.url.endswith(".js") and "app" in flow.request.url: # 先这么写  后面改
             flow.response.set_content(
-                Ctx_proxypack.__ast(content,"abc").jsafter.encode("utf8")
+                Ctx_proxypack.__ast(content).jsafter.encode("utf8")
             )
 
 
